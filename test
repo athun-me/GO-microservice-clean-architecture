@@ -1,0 +1,415 @@
+package main
+
+import (
+	"log"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/order"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/product"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	c, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalln("Failed at config", err)
+	}
+
+	r := gin.Default()
+
+	authSvc := *auth.RegisterRoutes(r, &c)
+	product.RegisterRoutes(r, &c, &authSvc)
+	order.RegisterRoutes(r, &c, &authSvc)
+
+	r.Run(c.Port)
+}
+
+syntax = "proto3";
+
+package auth;
+
+option go_package = "./pkg/auth/pb";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+// Register
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+// Login
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  int64 status = 1;
+  string error = 2;
+  string token = 3;
+}
+
+// Delete
+
+message DeleteRequest { int64 id = 1; }
+
+message DeleteResponse {
+  int64 status = 1;
+  string error = 2;
+  int64 id = 3;
+}
+
+// Validate
+
+message ValidateRequest { string token = 1; }
+
+message ValidateResponse {
+  int64 status = 1;
+  string error = 2;
+  int64 userId = 3;
+}
+
+package routes
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/pb"
+	"github.com/gin-gonic/gin"
+)
+
+func Delete(ctx *gin.Context, c pb.AuthServiceClient){
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	if err != nil{
+		log.Println(err)
+	}
+	fmt.Println("id", id)
+	res, err := c.Delete(context.Background(), &pb.DeleteRequest{
+		Id: int64(id),
+	})
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadGateway, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, &res)
+}
+
+package routes
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/pb"
+	"github.com/gin-gonic/gin"
+)
+
+type LoginRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func Login(ctx *gin.Context, c pb.AuthServiceClient) {
+	body := LoginRequestBody{}
+
+	if err := ctx.BindJSON(&body); err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	res, err := c.Login(context.Background(), &pb.LoginRequest{
+		Email:    body.Email,
+		Password: body.Password,
+	})
+	if err != nil {
+        ctx.AbortWithError(http.StatusBadGateway, err)
+        return
+    }
+
+	ctx.JSON(http.StatusCreated, &res)
+}
+
+package routes
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/pb"
+	"github.com/gin-gonic/gin"
+)
+
+type LoginRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func Login(ctx *gin.Context, c pb.AuthServiceClient) {
+	body := LoginRequestBody{}
+
+	if err := ctx.BindJSON(&body); err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	res, err := c.Login(context.Background(), &pb.LoginRequest{
+		Email:    body.Email,
+		Password: body.Password,
+	})
+	if err != nil {
+        ctx.AbortWithError(http.StatusBadGateway, err)
+        return
+    }
+
+	ctx.JSON(http.StatusCreated, &res)
+}
+
+package auth
+
+import (
+	"log"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/pb"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
+	"google.golang.org/grpc"
+)
+
+type ServiceClient struct {
+	Client pb.AuthServiceClient
+}
+
+func InitServiceClient(c *config.Config) pb.AuthServiceClient {
+
+	cc, err := grpc.Dial(c.AuthSvcUrl, grpc.WithInsecure())
+	if err != nil {
+		log.Println("Could not connect :", err)
+	}
+	return pb.NewAuthServiceClient(cc)
+}
+
+package auth
+
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/pb"
+	"github.com/gin-gonic/gin"
+)
+
+type AuthMiddlewareConfige struct {
+	svc *ServiceClient
+}
+
+func InitAuthMiddleware(svc *ServiceClient) AuthMiddlewareConfige {
+	return AuthMiddlewareConfige{svc}
+}
+
+func (c *AuthMiddlewareConfige) AuthRequired(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("autherization")
+
+	if authorization == "" {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	token := strings.Split(authorization, "Bearer")
+
+	if len(token) < 2 {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	res, err := c.svc.Client.Validate(context.Background(), &pb.ValidateRequest{
+		Token: token[1],
+	})
+
+	if err != nil || res.Status != http.StatusOK {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	ctx.Set("userId", res.UserId)
+
+	ctx.Next()
+}
+
+package auth
+
+import (
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/routes"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterRoutes(r *gin.Engine, c *config.Config) *ServiceClient {
+	svc := &ServiceClient{
+		Client: InitServiceClient(c),
+	}
+
+	routes := r.Group("/auth")
+	routes.DELETE("/delete/:id", svc.Delete)
+	routes.POST("/register", svc.Register)
+	routes.POST("/login", svc.Login)
+
+	return svc
+}
+
+func (svc *ServiceClient) Register(ctx *gin.Context) {
+	routes.Register(ctx, svc.Client)
+}
+func (svc *ServiceClient) Login(ctx *gin.Context) {
+	routes.Login(ctx, svc.Client)
+}
+
+func (svc *ServiceClient) Delete(ctx *gin.Context) {
+	routes.Delete(ctx, svc.Client)
+}
+
+PORT=:3001
+AUTH_SVC_URL=localhost:50051
+PRODUCT_SVC_URL=localhost:50052
+ORDER_SVC_URL=localhost:50053
+
+package config
+
+import (
+	"log"
+
+	"github.com/spf13/viper"
+)
+
+type Config struct {
+	Port          string `mapstructure:"PORT"`
+	AuthSvcUrl    string `mapstructure:"AUTH_SVC_URL"`
+	ProductSvcUrl string `mapstructure:"PRODUCT_SVC_URL"`
+	OrderSvcUrl   string `mapstructure:"ORDER_SVC_URL"`
+}
+
+func LoadConfig() (c Config, err error) {
+	viper.AddConfigPath("./pkg/config/envs")
+	viper.SetConfigName("dev")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+	err = viper.Unmarshal(&c)
+	if err != nil {
+		log.Println("Error while Unmarshal, in package config", err)
+	}
+	return
+}
+
+
+syntax = "proto3";
+
+package order;
+
+option go_package = "./pkg/order/pb";
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {}
+}
+
+message CreateOrderRequest {
+  int64 productId = 1;
+  int64 quantity = 2;
+  int64 userId = 3;
+}
+
+message CreateOrderResponse {
+  int64 status = 1;
+  string error = 2;
+  int64 id = 3;
+}
+
+
+package routes
+
+import (
+	"context"
+
+	"net/http"
+
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/order/pb"
+	"github.com/gin-gonic/gin"
+)
+
+type CreateOrderRequestBody struct {
+	ProductId int64 `json:"productId"`
+	Quantity  int64 `json:"quantity"`
+}
+
+func CreateOrder(ctx *gin.Context, c pb.OrderServiceClient) {
+	body := CreateOrderRequestBody{}
+
+	if err := ctx.BindJSON(&body); err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	userId, _ := ctx.Get("userId")
+
+	res, err := c.CreateOrder(context.Background(), &pb.CreateOrderRequest{
+		ProductId: body.ProductId,
+		Quantity:  body.Quantity,
+		UserId:    userId.(int64),
+	})
+
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadGateway, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, &res)
+
+}
+
+package order
+
+import (
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/order/routes"
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterRoutes(r *gin.Engine, c *config.Config, authSvc *auth.ServiceClient) {
+	a := auth.InitAuthMiddleware(authSvc)
+
+	svc := &ServiceClient{
+		Client: InitServiceClient(c),
+	}
+
+	routes := r.Group("/order")
+	routes.Use(a.AuthRequired)
+	routes.POST("/", svc.CreateOrder)
+}
+
+func (svc *ServiceClient) CreateOrder(ctx *gin.Context) {
+	routes.CreateOrder(ctx, svc.Client)
+}

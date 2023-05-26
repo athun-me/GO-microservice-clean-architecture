@@ -1,22 +1,31 @@
 package auth
 
 import (
-	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth"
+	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth/routes"
 	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRouter(r *gin.Engine, c *config.Config, authSvc *auth.ServiceClient){
-	a := auth.InitAuthMiddleware(authSvc)
+func RegisterRoutes(r *gin.Engine, c *config.Config) *ServiceClient {
 	svc := &ServiceClient{
 		Client: InitServiceClient(c),
 	}
 
-	routes := r.Group("/order")
-	routes.Use(a.AuthRequired)
-	routes.POST("/", svc.CreateOder)
+	routes := r.Group("/auth")
+	routes.DELETE("/delete/:id", svc.Delete)
+	routes.POST("/register", svc.Register)
+	routes.POST("/login", svc.Login)
+
+	return svc
 }
 
-func (svc *ServiceClient)CreateOder(ctx *gin.Context){
-	routes.CreateOrder(ctx, svc.Client)
+func (svc *ServiceClient) Register(ctx *gin.Context) {
+	routes.Register(ctx, svc.Client)
+}
+func (svc *ServiceClient) Login(ctx *gin.Context) {
+	routes.Login(ctx, svc.Client)
+}
+
+func (svc *ServiceClient) Delete(ctx *gin.Context) {
+	routes.Delete(ctx, svc.Client)
 }
