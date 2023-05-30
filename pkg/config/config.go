@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -18,6 +19,7 @@ func LoadConfig() (c Config, err error) {
 	viper.SetConfigName("dev")
 	viper.SetConfigType("env")
 
+	fmt.Println("-----------------------------------")
 	viper.AutomaticEnv()
 	err = viper.ReadInConfig()
 	if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth"
@@ -12,6 +13,7 @@ import (
 
 func main() {
 	c, err := config.LoadConfig()
+	fmt.Println()
 
 	if err != nil {
 		log.Fatalln("Failed at config", err)
