@@ -1,33 +1,49 @@
 package config
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/go-playground/validator"
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Port          string `mapstructure:"PORT"`
-	AuthSvcUrl    string `mapstructure:"AUTH_SVC_URL"`
-	ProductSvcUrl string `mapstructure:"PRODUCT_SVC_URL"`
-	OrderSvcUrl   string `mapstructure:"ORDER_SVC_URL"`
+	DBHost     string `mapstructure:"DBHOST"`
+	DBName     string `mapstructure:"DBNAME"`
+	DBUser     string `mapstructure:"DBUSER"`
+	DBPort     string `mapstructure:"DBPORT"`
+	DBPassword string `mapstructure:"DBPASSWORD"`
 }
 
-func LoadConfig() (c Config, err error) {
-	viper.AddConfigPath("./pkg/config/envs")
-	viper.SetConfigName("dev")
-	viper.SetConfigType("env")
+var envs = []string{
+	"DBHOST", "DBNAME", "DBUSER", "DBPORT", "DBPASSWORD",
+}
 
-	fmt.Println("-----------------------------------")
-	viper.AutomaticEnv()
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
+func LoadConfig() (Config, error) {
+	var cfg Config
+	viper.AddConfigPath("./")
+	viper.SetConfigFile(".env")
+	viper.ReadInConfig()
+	for _, env := range envs {
+		if err := viper.BindEnv(env); err != nil {
+			return cfg, err
+		}
 	}
-	err = viper.Unmarshal(&c)
-	if err != nil {
-		log.Println("Error while Unmarshal, in package config", err)
+	cfgerr := viper.Unmarshal(&cfg)
+
+	if err := validator.New().Struct(&cfg); err != nil {
+		return cfg, err
 	}
-	return
+	LoadEnv()
+
+	return cfg, cfgerr
+
+}
+
+func LoadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading Env File")
+	}
 }

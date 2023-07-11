@@ -1,0 +1,87 @@
+bookNow-auth-svc/
+├── cmd/
+│   ├── docs/
+│   │   ├── docs.go
+│   │   ├── swagger.json
+│   │   └── swagger.yaml
+│   └── main.go
+├── docs/
+├── Dockerfile
+├── docker-compose.yml
+├── Makefile
+├── pkg/
+│   ├── api/
+│   │   ├── handler/
+│   │   │   └── userHandler.go
+│   │   ├── middleware/
+│   │   │   └── middleware.go
+│   │   ├── middleware.go
+│   │   └── server.go
+│   ├── config/
+│   │   └── config.go
+│   ├── db/
+│   │   ├── connection.go
+│   │   └── connectGorm.go
+│   ├── di/
+│   │   └── wire.go
+│   ├── domain/
+│   │   ├── jwtClaimsModel.go
+│   │   └── user.go
+│   ├── mock/
+│   ├── repository/
+│   │   ├── interface/
+│   │   │   └── userRepoInterface.go
+│   │   └── userRepository.go
+│   ├── response/
+│   │   └── commonResponse.go
+│   ├── usecase/
+│   │   ├── interface/
+│   │   │   └── userUsecaseInterface.go
+│   │   └── userUsecase.go
+│   └── utils/
+│       └── utils.go
+├── README.md
+└── .gitignore
+
+
+--------------------------------------------------------
+command for create the folder structure
+
+mkdir -p cleanArchitectureDemo/cmd/docs
+mkdir -p cleanArchitectureDemo/pkg/api/handler
+mkdir -p cleanArchitectureDemo/pkg/api/middleware
+mkdir -p cleanArchitectureDemo/pkg/config
+mkdir -p cleanArchitectureDemo/pkg/db
+mkdir -p cleanArchitectureDemo/pkg/di
+mkdir -p cleanArchitectureDemo/pkg/domain
+mkdir -p cleanArchitectureDemo/pkg/mock
+mkdir -p cleanArchitectureDemo/pkg/repository/interface
+mkdir -p cleanArchitectureDemo/pkg/response
+mkdir -p cleanArchitectureDemo/pkg/usecase/interface
+mkdir -p cleanArchitectureDemo/pkg/utils
+
+touch cleanArchitectureDemo/cmd/docs/docs.go
+touch cleanArchitectureDemo/cmd/docs/swagger.json
+touch cleanArchitectureDemo/cmd/docs/swagger.yaml
+touch cleanArchitectureDemo/cmd/main.go
+touch cleanArchitectureDemo/Dockerfile
+touch cleanArchitectureDemo/docker-compose.yml
+touch cleanArchitectureDemo/Makefile
+touch cleanArchitectureDemo/pkg/api/handler/userHandler.go
+touch cleanArchitectureDemo/pkg/api/middleware/middleware.go
+touch cleanArchitectureDemo/pkg/api/middleware.go
+touch cleanArchitectureDemo/pkg/api/server.go
+touch cleanArchitectureDemo/pkg/config/config.go
+touch cleanArchitectureDemo/pkg/db/connection.go
+touch cleanArchitectureDemo/pkg/db/connectGorm.go
+touch cleanArchitectureDemo/pkg/di/wire.go
+touch cleanArchitectureDemo/pkg/domain/jwtClaimsModel.go
+touch cleanArchitectureDemo/pkg/domain/user.go
+touch cleanArchitectureDemo/pkg/repository/interface/userRepoInterface.go
+touch cleanArchitectureDemo/pkg/repository/userRepository.go
+touch cleanArchitectureDemo/pkg/response/commonResponse.go
+touch cleanArchitectureDemo/pkg/usecase/interface/userUsecaseInterface.go
+touch cleanArchitectureDemo/pkg/usecase/userUsecase.go
+touch cleanArchitectureDemo/pkg/utils/utils.go
+touch cleanArchitectureDemo/README.md
+touch cleanArchitectureDemo/.gitignore

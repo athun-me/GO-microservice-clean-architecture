@@ -1,29 +1,23 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/auth"
-	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/config"
-	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/order"
-	"github.com/athunlal/mini-ecommerce-microservice-clean-architecture/pkg/product"
-	"github.com/gin-gonic/gin"
+	"athun/pkg/config"
+	"athun/pkg/di"
 )
 
 func main() {
-	c, err := config.LoadConfig()
-	fmt.Println()
-
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalln("Failed at config", err)
+		log.Fatalln("Failed to load the Congiguration File: ", err)
+		return
 	}
 
-	r := gin.Default()
+	server, err := di.InitApi(cfg)
+	if err != nil {
+		log.Fatalln("Error in initializing the api", err)
+	}
+	server.Start()
 
-	authSvc := *auth.RegisterRoutes(r, &c)
-	product.RegisterRoutes(r, &c, &authSvc)
-	order.RegisterRoutes(r, &c, &authSvc)
-
-	r.Run(c.Port)
 }
