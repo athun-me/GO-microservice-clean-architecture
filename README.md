@@ -1,6 +1,6 @@
 # GO-microservice-clean-architecture
 
-This repository contains the code for the BookNow Authentication Service, which demonstrates the implementation of the Clean Architecture principles.
+This repository contains the code for the GO-microservice-clean-architecture, which demonstrates the implementation of the Clean Architecture principles.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This repository contains the code for the BookNow Authentication Service, which 
 
 ## Introduction
 
-The BookNow Authentication Service is a simple API designed to handle user registration using the Clean Architecture principles. It provides registration functionality and stores user data in a PostgreSQL database. The project utilizes the Wire framework for dependency injection, Gin for the server framework, and Gorm as the ORM for interacting with the database.
+The GO-microservice-clean-architecture is a simple API designed to handle user registration using the Clean Architecture principles. It provides registration functionality and stores user data in a PostgreSQL database. The project utilizes the Wire framework for dependency injection, Gin for the server framework, and Gorm as the ORM for interacting with the database.
 
 The Clean Architecture principles are followed to ensure a separation of concerns and maintainability of the codebase. The project's folder structure and code organization demonstrate how to implement the Clean Architecture concepts in a practical scenario.
 
@@ -134,7 +134,7 @@ In this representation, the four layers are arranged in a top-down manner, with 
 
 ## Installation
 
-To install and set up the BookNow Authentication Service, follow these steps:
+To install and set up the GO-microservice-clean-architecture, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/athunlal/GO-microservice-clean-architecture.git`
 2. Change into the project directory: `cd GO-microservice-clean-architecture`
