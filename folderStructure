@@ -1,4 +1,4 @@
-bookNow-auth-svc/
+Clean-Architecture/
 ├── cmd/
 │   ├── docs/
 │   │   ├── docs.go
