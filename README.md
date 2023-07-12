@@ -6,6 +6,7 @@ This repository contains the code for the BookNow Authentication Service, which 
 
 - [Introduction](#introduction)
 - [Folder Structure](#folder-structure)
+- [Visualization](#Visualization)
 - [Installation](#installation)
 - [Folder Structure Creation Commands](#Folder-Structure-Creation-Commands)
 - [Contributing](#contributing)
@@ -72,7 +73,6 @@ Clean-Architecture/
 └── .gitignore
 ```
 
-
 The main components of the architecture are located in the `pkg` folder. Here's a brief overview of each folder:
 
 - `cmd`: Contains the main application entry point and Swagger documentation files.
@@ -89,6 +89,45 @@ The main components of the architecture are located in the `pkg` folder. Here's 
 - `pkg/utils`: Contains utility functions used throughout the service.
 - `README.md`: This file you're currently reading.
 - `.gitignore`: Specifies files and folders to be ignored by Git.
+
+## Visualization
+
+Visualize the Clean Architecture in Go with the following graphical representation:
+
+```bash
+   +----------------+
+   |    Controller  |
+   +----------------+
+           |
+           ↓
+   +----------------+
+   |    Use Case    |
+   +----------------+
+           |
+           ↓
+   +----------------+
+   |  Repository   |
+   +----------------+
+           |
+           ↓
+   +----------------+
+   |     Domain     |
+   +----------------+
+
+```
+
+In this representation, the four layers are arranged in a top-down manner, with each layer depending on the layer below it. Here's a brief description of each layer:
+
+1. Controller: This layer represents the outermost layer and is responsible for handling external inputs such as HTTP requests or 
+   command-line inputs. It receives the input and invokes the appropriate use case(s) to process the request.
+2. Use Case: The use case layer contains the application-specific business logic. It represents the high-level actions or operations of
+   the application. Use cases coordinate the interaction between the controller, repository, and domain layers to fulfill the requested operation.
+3. Repository: The repository layer abstracts the data access and storage operations. It defines an interface that specifies the 
+   methods for interacting with the underlying data storage (e.g., a database). The concrete implementation of the repository is typically provided in an external package or module.
+4. Domain: The domain layer represents the core business entities and rules. It contains the essential business logic and data 
+   structures of the application. The entities in this layer are independent of any external dependencies and frameworks.
+
+
 
 ## Installation
 
