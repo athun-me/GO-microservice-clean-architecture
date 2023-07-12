@@ -93,6 +93,9 @@ The main components of the architecture are located in the `pkg` folder. Here's 
 ## Visualization
 
 Visualize the Clean Architecture in Go with the following graphical representation:
+<br>
+![alt text](screenshot.png)
+
 
 ```bash
    +----------------+
